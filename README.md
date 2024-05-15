@@ -17,6 +17,7 @@ This repository contains some Python scripts for manipulating text files.
 4. Account Overview
 - This script fetches various information about a Rackspace cloud account using the Rackspace API. It allows the user to authenticate with the Rackspace API and retrieves data for a number of services in each supported region.
 - Usage: `python account_overview.py`
+- NOTE: If you are interracting with a UK account which utilizes the LON region, use the `lon_account_overview.py` script.
 
 Author: Brian Abshier
 License: MIT License
