@@ -14,5 +14,9 @@ This repository contains some Python scripts for manipulating text files.
 - Compares the contents of two text files line by line and prints out the matching lines as well as the lines that are unique to each file.
 - Usage: `python compare.py`
 
+4. Account Overview
+- This script fetches various information about a Rackspace cloud account using the Rackspace API. It allows the user to authenticate with the Rackspace API and retrieves data for a number of services in each supported region.
+- Usage: `python account_overview.py`
+
 Author: Brian Abshier
 License: MIT License
