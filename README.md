@@ -20,4 +20,5 @@ This repository contains some Python scripts for manipulating text files.
 - NOTE: If you are interracting with a UK account which utilizes the LON region, use the `lon_account_overview.py` script.
 
 Author: Brian Abshier
+
 License: MIT License
