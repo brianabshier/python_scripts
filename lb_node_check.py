@@ -7,9 +7,9 @@ from email.mime.multipart import MIMEMultipart
 # This uses python3
 
 # Replace these with your actual Rackspace credentials and email details
-username = '$RACKSPACE_USERNAME'
-api_key = '$RACKSPACE_APIKEY'
-ddi = '$ACCOUNT_NUMBER'          # Your DDI (data center identifier)
+username = '$RACKSPACE_USERNAME'    #Your Rackspace account username
+api_key = '$RACKSPACE_APIKEY'    # Your Rackspace API Key
+ddi = '$ACCOUNT_NUMBER'          # Your account number
 lb_id = '$LOADBALANCER_ID'      # Your Load Balancer ID
 
 # Email configuration
@@ -50,7 +50,7 @@ def send_email(subject, body):
         # Set up the SMTP server
         server = smtplib.SMTP('smtp.gmail.com', 587)  # Use your SMTP server here, example is the default SMTP server for gmail.
         server.starttls()  # Secure the connection
-        server.login(sender_email, "$MAIIL_PASSWORD")  # Sender's email login credentials (use app password if 2FA enabled)
+        server.login(sender_email, "$MAIL_PASSWORD")  # Sender's email login credentials (use app password if 2FA enabled)
         
         # Craft the email
         message = MIMEMultipart()
@@ -70,7 +70,7 @@ def send_email(subject, body):
 
 # Function to check load balancer node status
 def check_load_balancer_status(token, ddi, lb_id):
-    # API URL for the load balancer details
+    # API URL for the load balancer details replace $REGION with region (iad, dfw, etc) and $ACCOUNT_NUMBER with your account number.
     lb_url = f'https://$REGION.loadbalancers.api.rackspacecloud.com/v1.0/$ACCOUNT_NUMBER/loadbalancers/{lb_id}'
 
     # Set the authentication header using the token
