@@ -19,6 +19,10 @@ This repository contains some Python scripts for manipulating text files.
 - Usage: `python account_overview.py`
 - NOTE: If you are interracting with a UK account which utilizes the LON region, use the `lon_account_overview.py` script.
 
+5. LB Node Check
+- This python3 script checks a specific Rackspace Cloud Load Balancer and if it finds a node in an 'OFFLINE' status will send an email to the configured address using the configured SMTP setup.
+- Usage: `python3 lb_node_check.py`
+
 Author: Brian Abshier
 
 License: MIT License
