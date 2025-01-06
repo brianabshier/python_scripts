@@ -23,6 +23,10 @@ This repository contains some Python scripts for manipulating text files.
 - This python3 script checks a specific Rackspace Cloud Load Balancer and if it finds a node in an 'OFFLINE' status will send an email to the configured address using the configured SMTP setup.
 - Usage: `python3 lb_node_check.py`
 
+6. CORs Adder
+- This python2 script uses pyrax and variables set by the user within the file to add CORS headers as metadata to a Cloud Files container.
+- Usage: `python cf_cors.py`
+
 Author: Brian Abshier
 
 License: MIT License
