@@ -33,6 +33,7 @@ This repository contains some Python scripts for manipulating text files.
 - The parser will look inside a directory for any log.gz files, extract them, and parse them.
 - The scripts do not involve the fetching/downloading of any log files - this must be done separately.
 - Review the README_logparser.txt file for more information on dependencies and requirements.
+- Usage: `python3 logparser.py /$DIR/$DIR`
 
 Author: Brian Abshier
 
