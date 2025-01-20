@@ -27,6 +27,12 @@ This repository contains some Python scripts for manipulating text files.
 - This python2 script uses pyrax and variables set by the user within the file to add CORS headers as metadata to a Cloud Files container.
 - Usage: `python cf_cors.py`
 
+7. Cloud Files Log Parser
+- There are two python3 scripts called logparser.py and logparser_geo.py that allow a user to parse through their Rackspace Cloud Files CDN/Access logs and obtain information on the log files such as most frequently requested files, respnse codes, source IPs, etc.
+- The logparser_geo.py file incudes geolocation lookups to match a continent on the top 10 identified IPs in the logs
+- The parser will look inside a directory for any log.gz files, extract them, and parse them.
+- The scripts do not involve the fetching/downloading of any log files - this must be done separately. 
+
 Author: Brian Abshier
 
 License: MIT License
