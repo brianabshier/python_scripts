@@ -31,7 +31,8 @@ This repository contains some Python scripts for manipulating text files.
 - There are two python3 scripts called logparser.py and logparser_geo.py that allow a user to parse through their Rackspace Cloud Files CDN/Access logs and obtain information on the log files such as most frequently requested files, respnse codes, source IPs, etc.
 - The logparser_geo.py file incudes geolocation lookups to match a continent on the top 10 identified IPs in the logs
 - The parser will look inside a directory for any log.gz files, extract them, and parse them.
-- The scripts do not involve the fetching/downloading of any log files - this must be done separately. 
+- The scripts do not involve the fetching/downloading of any log files - this must be done separately.
+- Review the README_logparser.txt file for more information on dependencies and requirements.
 
 Author: Brian Abshier
 
