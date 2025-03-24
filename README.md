@@ -37,6 +37,7 @@ This repository contains some Python scripts for manipulating text files.
 
 8. Load Balancer Historical Data Puller
 - This script authenticates with the Rackspace API using a username and API key, retrieves historical usage data for a specified Cloud Load Balancer, and aggregates the results. The script supports pagination and calculates total and average usage metrics.
+- Usage: `python3 lb_historical.py`
 
 Author: Brian Abshier
 
