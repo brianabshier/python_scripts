@@ -1,7 +1,7 @@
 Rackspace Cloud Load Balancer Usage Aggregator
 
 Overview:
-This script authenticates with the Rackspace API using a username and API key, retrieves historical usage data for a specified Cloud Load Balancer, and aggregates the results. The script supports pagination and calculates total and average usage metrics.
+This script authenticates with the Rackspace API using a username and API key, retrieves historical usage data for any specified Cloud Load Balancers, and aggregates the results. The script supports pagination and calculates total and average usage metrics.
 
 Features:
 - Authenticates with Rackspace Identity API to obtain an access token.
@@ -23,7 +23,7 @@ Usage:
    - Rackspace username
    - API key
    - Region (default: 'DFW')
-   - Load Balancer ID
+   - Load Balancer IDs (Comma separated list)
    - Start date (YYYY-MM-DD)
    - End date (YYYY-MM-DD)
 3. The script will authenticate, fetch usage data, and display aggregated results in JSON format.
