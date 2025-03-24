@@ -1,3 +1,5 @@
+# This script fetches the historical data for a Rackspace Cloud Load Balancer and sums the values across the range specified. There is a 90 day limit on historical data.
+
 import requests
 import json
 from datetime import datetime
