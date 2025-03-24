@@ -1,4 +1,4 @@
-# This script fetches the historical data for a Rackspace Cloud Load Balancer and sums the values across the range specified. There is a 90 day limit on historical data.
+# This Python3 script fetches historical data for Rackspace Cloud Load Balancers on a given account and region. You can specify a comma separated list of LB IDs. Historical data only goes back 90 days.
 
 import requests
 import json
@@ -60,18 +60,21 @@ def main():
     username = input("Enter Rackspace username: ")
     api_key = input("Enter Rackspace API key: ")
     region = input("Enter region (default 'DFW'): ") or 'DFW'
-    lb_id = input("Enter Load Balancer ID: ")
+    lb_ids = input("Enter Load Balancer IDs (comma-separated): ").split(",")
     start_date = input("Enter start date (YYYY-MM-DD): ")
     end_date = input("Enter end date (YYYY-MM-DD): ")
     
     try:
         token, tenant_id = authenticate(username, api_key, region)
-        records = get_load_balancer_usage(token, tenant_id, lb_id, start_date, end_date, region)
-        aggregated_data = aggregate_usage(records)
-        print(json.dumps(aggregated_data, indent=4))
+        for lb_id in lb_ids:
+            lb_id = lb_id.strip()  # Remove any leading/trailing whitespace
+            print(f"\nFetching data for Load Balancer ID: {lb_id}")
+            records = get_load_balancer_usage(token, tenant_id, lb_id, start_date, end_date, region)
+            aggregated_data = aggregate_usage(records)
+            print(f"Aggregated data for Load Balancer {lb_id}:")
+            print(json.dumps(aggregated_data, indent=4))
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
-
