@@ -35,6 +35,9 @@ This repository contains some Python scripts for manipulating text files.
 - Review the README_logparser.txt file for more information on dependencies and requirements.
 - Usage: `python3 logparser.py /$DIR/$DIR`
 
+8. Load Balancer Historical Data Puller
+- This script authenticates with the Rackspace API using a username and API key, retrieves historical usage data for a specified Cloud Load Balancer, and aggregates the results. The script supports pagination and calculates total and average usage metrics.
+
 Author: Brian Abshier
 
 License: MIT License
