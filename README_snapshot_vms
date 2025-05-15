@@ -1,0 +1,41 @@
+Description:
+------------
+This script automates the creation of snapshots for all active OpenStack instances
+in your project. It also cleans up old snapshots beyond a configured retention count,
+and tracks instances to detect when VMs are added or removed.
+
+Features:
+---------
+- Authenticates using OpenStack API with provided credentials.
+- Creates snapshots named with a prefix, instance name, and timestamp.
+- Keeps a configurable number of snapshots per instance (retention policy).
+- Tracks instance changes between runs.
+- Supports staggering snapshot creation to avoid resource spikes.
+- Saves instance state in a local JSON file.
+
+Requirements:
+-------------
+- Python 3.x
+- openstacksdk library (`pip install openstacksdk`)
+- Access to OpenStack with API credentials
+
+Usage:
+------
+1. Configure your OpenStack authentication parameters in the script (AUTH_ARGS).
+2. Optionally adjust settings like:
+   - SNAPSHOT_PREFIX (default: "auto-snap")
+   - SNAPSHOT_RETENTION (default: 3)
+   - STAGGER_SECONDS (default: 10)
+   - DATA_FILE (state file location)
+3. Run the script:
+   python snapshot_vms.py
+Schedule this script using cron or another scheduler for regular snapshots.
+
+Notes:
+- The script stores instance state in a JSON file (vm_state.json by default).
+- Ensure the script has write permission in its working directory.
+- Snapshot names follow the pattern: auto-snap-<instance_name>-YYYYMMDD-HHMMSS
+- Adjust retention to control how many snapshots to keep per instance.
+
+Author: Brian Abshier
+License: MIT License
