@@ -43,6 +43,10 @@ This repository contains some Python scripts for manipulating text files.
 - This script authenticates with both the source Rackspace Account and the destination Rackspace Account and transfers a Cloud Block Storage Volume from the source to the destination.
 - Usage: `python3 volume_transfer.py`
 
+10. Snapshot VMs
+- This script authenticates with both an OpenStack account, lists current VMs, initiates staggered snapshots on VMs, cleans up old snapshots based on retention rule.
+- Usage: `python3 snapshot_vms.py`
+
 Author: Brian Abshier
 
 License: MIT License
