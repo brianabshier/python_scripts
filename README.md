@@ -47,6 +47,10 @@ This repository contains some Python scripts for manipulating text files.
 - This script authenticates with both an OpenStack account, lists current VMs, initiates staggered snapshots on VMs, cleans up old snapshots based on retention rule.
 - Usage: `python3 snapshot_vms.py`
 
+11. Account Optimizer
+- This script authenticates with a Rackspace OpenStack Public Cloud account and prompts the user for which regions they want to scan, whether to generate an optimization report, and offers an option to export the report to a file. This report identifies potential waste in the accounts that could be removed to save cost.
+- Usage: `python3 account_optimizer.py`
+
 Author: Brian Abshier
 
 License: MIT License
