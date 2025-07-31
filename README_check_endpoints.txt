@@ -3,7 +3,7 @@ CHECK ENDPOINTS SCRIPT
 
 Description:
 ------------
-This Python script checks a specified text-based file for the presence of any known endpoints (e.g., URLs or domain names). It scans the file line-by-line and reports any matches.
+This Python script checks all text-based files for the presence of any known endpoints (e.g., URLs or domain names). It scans the file line-by-line and reports any matches.
 
 Endpoints checked by default:
 - api.mosso.com
@@ -22,7 +22,7 @@ Usage:
 Option 1: Provide the file path as a command-line argument
 -----------------------------------------------------------
 Example:
-    python check_endpoints.py path/to/yourfile.txt
+    python check_endpoints.py path/to/directory/
 
 Option 2: Run the script and input the file path when prompted
 ---------------------------------------------------------------
