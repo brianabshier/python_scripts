@@ -51,6 +51,10 @@ This repository contains some Python scripts for manipulating text files.
 - This script authenticates with a Rackspace OpenStack Public Cloud account and prompts the user for which regions they want to scan, whether to generate an optimization report, and offers an option to export the report to a file. This report identifies potential waste in the accounts that could be removed to save cost.
 - Usage: `python3 account_optimizer.py`
 
+12. Endpoint Checker
+- This script will check any files you specify for endpoints embedded within the script. If any are found it will report it and give the line number.
+- Usage: `python3 check_endpoints.py`
+
 Author: Brian Abshier
 
 License: MIT License
