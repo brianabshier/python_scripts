@@ -44,7 +44,7 @@ This repository contains some Python scripts for manipulating text files.
 - Usage: `python3 volume_transfer.py`
 
 10. Snapshot VMs
-- This script authenticates with both an OpenStack account (not Rackspace Cloud), lists current VMs, initiates staggered snapshots on VMs, cleans up old snapshots based on retention rule.
+- This script authenticates with an OpenStack Application Credential, lists current VMs, initiates staggered snapshots on VMs, cleans up old snapshots based on retention rules, and allows the exclusion of VMs based on UUID or naming conventions.
 - Usage: `python3 snapshot_vms.py`
 
 11. Account Optimizer
