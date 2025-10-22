@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+This python3 script is outdated and utilizes actual OpenStack user credentials to create Snapshots of all VMs in an OpenStack Project. Use 'snapshot_vms.py' instead which uses Application credentials.
+"""
 
 import openstack
 import os
