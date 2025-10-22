@@ -2,22 +2,23 @@ Description:
 ------------
 This script automates the creation of snapshots for all active OpenStack instances
 in your project. It also cleans up old snapshots beyond a configured retention count,
-and tracks instances to detect when VMs are added or removed.
+tracks instances to detect when VMs are added or removed, and also allows you to exclude VMs based on ID or naming conventions.
 
 Features:
 ---------
-- Authenticates using OpenStack API with provided credentials.
+- Authenticates using OpenStack API with Application Credentials.
 - Creates snapshots named with a prefix, instance name, and timestamp.
 - Keeps a configurable number of snapshots per instance (retention policy).
 - Tracks instance changes between runs.
 - Supports staggering snapshot creation to avoid resource spikes.
 - Saves instance state in a local JSON file.
+- Allows the exclusion of VMs via UUID and/or naming conventions.
 
 Requirements:
 -------------
 - Python 3.x
 - openstacksdk library (`pip install openstacksdk`)
-- Access to OpenStack with API credentials
+- Access to OpenStack with Application Credentials
 
 Usage:
 ------
@@ -27,8 +28,11 @@ Usage:
    - SNAPSHOT_RETENTION (default: 3)
    - STAGGER_SECONDS (default: 10)
    - DATA_FILE (state file location)
+   - place .snapshot_data/exclude_ids.txt with a list of VM UUIDs to exclude
+   - place .snapshot_data/exclude_names.txt with a list of VM names to exclude (Supports wildcards)
 3. Run the script:
    python snapshot_vms.py
+
 Schedule this script using cron or another scheduler for regular snapshots.
 
 Notes:
