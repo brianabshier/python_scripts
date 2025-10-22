@@ -5,9 +5,9 @@ OpenStack VM Snapshot Script using Application Credentials
 Creates snapshots of all instances in the project,
 retains a fixed number per instance, and removes older ones.
 Credentials are hardcoded in the script (Application Credential ID + Secret).
-VMs can be excluded from snapshotting using:
-  - .snapshot_data/exclude_ids.txt       (one VM ID per line)
-  - .snapshot_data/exclude_names.txt     (one pattern per line, supports '*' wildcards)
+VMs can be excluded from snapshotting by creating and using:
+  - .snapshot_data/exclude_ids.txt (one VM ID per line)
+  - .snapshot_data/exclude_names.txt (one pattern per line, supports '*' wildcards)
 """
 
 import json
