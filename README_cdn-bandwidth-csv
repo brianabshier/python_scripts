@@ -1,0 +1,31 @@
+Rackspace CDN Bandwidth Output JSON to CSV Converter
+
+This Python script converts CDN/API bandwidth analytics JSON data into
+human-readable CSV files. It processes per-region, per-day byte counts
+and outputs both daily usage and total usage by region.
+
+Usage:
+
+Run the script with a JSON file as an argument.
+
+The script generates CSV files in the same directory.
+
+Example:
+
+python bandwidth_to_csv.py data.json
+
+
+Output:
+
+<filename>_daily.csv — daily bandwidth usage by region
+
+<filename>_region_totals.csv — total bandwidth usage per region
+
+Notes:
+
+Bandwidth is converted from bytes to GiB (1024³).
+
+Uses Python standard library only.
+
+Author: Brian Abshier
+License: MIT License
