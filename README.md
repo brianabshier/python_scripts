@@ -55,6 +55,10 @@ This repository contains some Python scripts for manipulating text files.
 - This script will check any files you specify for endpoints embedded within the script. If any are found it will report it and give the line number.
 - Usage: `python3 check_endpoints.py`
 
+13. CDN Bandwidth CSV Converter
+- This script will allow you to ingest a json file made up of the response provided from the Rackspace CDN portal after setting metrics range for date and choosing bandwidth.
+- Usage: `python bandwidth_to_csv.py data.json`
+
 Author: Brian Abshier
 
 License: MIT License
