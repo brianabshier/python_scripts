@@ -59,6 +59,11 @@ This repository contains some Python scripts for manipulating text files.
 - This script will allow you to ingest a json file made up of the response provided from the Rackspace CDN portal after setting metrics range for date and choosing bandwidth.
 - Usage: `python bandwidth_to_csv.py data.json`
 
+14. OpenStack Project Cleanup
+- This script will allow you to delete all the resources (except PUBLICNET network and 'default' security group) from an OpenStack project you have authenticated with using OpenRC file.
+- Usage: `python3 cleanup-openstack.py` will do a dry run to show what it will delete.
+- Usage: `python3 cleanup-openstack.py --execute` will run and delete the resources.
+
 Author: Brian Abshier
 
 License: MIT License
