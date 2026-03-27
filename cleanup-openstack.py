@@ -23,6 +23,7 @@ Preserves:
 Notes:
 - Dry-run by default
 - Use --execute to actually delete resources
+- Requires confirmation of the target project unless --yes is supplied
 - Uses the OpenStack CLI already configured in your environment
 - Does not rely on volume --force
 - Detects whether your CLI supports volume delete --cascade or --purge
@@ -32,11 +33,15 @@ Notes:
 Examples:
     python3 cleanup_openstack_project.py
     python3 cleanup_openstack_project.py --execute
+    python3 cleanup_openstack_project.py --execute --yes
     python3 cleanup_openstack_project.py --execute --network-passes 3
 """
 
 import argparse
+import ast
 import json
+import os
+import re
 import shutil
 import subprocess
 import sys
@@ -46,6 +51,11 @@ from typing import Any, Dict, List, Optional, Sequence, Set
 
 class OSCommandError(RuntimeError):
     pass
+
+
+UUID_PATTERN = re.compile(
+    r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+)
 
 
 def run_cmd(
@@ -114,10 +124,25 @@ def verify_auth() -> None:
         raise SystemExit(1) from exc
 
 
+def get_token_info() -> Dict[str, Any]:
+    result = run_cmd(["openstack", "token", "issue", "-f", "json"], expect_json=True)
+    if not isinstance(result, dict):
+        raise OSCommandError("Unexpected response from openstack token issue")
+    return result
+
+
 def os_list(resource: List[str], extra_args: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     extra_args = extra_args or []
     cmd = ["openstack", *resource, "list", *extra_args, "-f", "json"]
     return run_cmd(cmd, expect_json=True)
+
+
+def os_show(resource: List[str], object_id: str, allow_fail: bool = False) -> Optional[Dict[str, Any]]:
+    cmd = ["openstack", *resource, "show", object_id, "-f", "json"]
+    result = run_cmd(cmd, expect_json=True, allow_fail=allow_fail)
+    if result is None:
+        return None
+    return result
 
 
 def value_get(obj: Dict[str, Any], *keys: str, default: Any = None) -> Any:
@@ -177,6 +202,106 @@ def list_routers_long() -> List[Dict[str, Any]]:
     return os_list(["router"], extra_args=["--long"])
 
 
+def list_ports_for_router(router_id: str) -> List[Dict[str, Any]]:
+    ports = []
+
+    try:
+        ports = os_list(["port"], extra_args=["--router", router_id, "--long"])
+    except Exception:
+        pass
+
+    if ports:
+        return ports
+
+    router_ports = []
+    for port in list_ports_long():
+        device_id = value_get(port, "Device ID", "device_id")
+        if device_id == router_id:
+            router_ports.append(port)
+
+    return router_ports
+
+
+def get_current_project_info() -> Dict[str, Any]:
+    token_info = get_token_info()
+    project_id = str(
+        value_get(
+            token_info,
+            "project_id",
+            "project",
+            "Project",
+            default="",
+        )
+        or ""
+    )
+
+    project_name = str(
+        value_get(
+            token_info,
+            "project_name",
+            "project",
+            "Project",
+            default="",
+        )
+        or ""
+    )
+    user_name = str(value_get(token_info, "user_name", "user", "User", default="") or "")
+    if not user_name:
+        user_name = os.environ.get("OS_USERNAME", "").strip()
+    region_name = os.environ.get("OS_REGION_NAME", "").strip()
+    project_tags: List[str] = []
+
+    project_details = os_show(["project"], project_id, allow_fail=True) if project_id else None
+    if project_details:
+        project_name = str(
+            value_get(project_details, "name", "Name", default=project_name or project_id) or project_name
+        )
+        raw_tags = value_get(project_details, "tags", "Tags", default=[])
+        if isinstance(raw_tags, list):
+            project_tags = [str(tag) for tag in raw_tags if str(tag).strip()]
+        elif isinstance(raw_tags, str) and raw_tags.strip():
+            project_tags = [tag.strip() for tag in raw_tags.split(",") if tag.strip()]
+
+    return {
+        "project_id": project_id or "unknown",
+        "project_name": project_name or "unknown",
+        "user_name": user_name or "unknown",
+        "region_name": region_name or "unknown",
+        "project_tags": project_tags,
+    }
+
+
+def confirm_target_project(skip_confirmation: bool) -> None:
+    info = get_current_project_info()
+
+    print("\n== Target project confirmation ==")
+    print(f"Project Name: {info['project_name']}")
+    print(f"Project ID: {info['project_id']}")
+    print(f"Authenticated user: {info['user_name']}")
+    print(f"Region: {info['region_name']}")
+    if info["project_tags"]:
+        print(f"Project tags: {', '.join(info['project_tags'])}")
+    else:
+        print("Project tags: none")
+
+    if skip_confirmation:
+        print("Confirmation bypassed with --yes.")
+        return
+
+    if not sys.stdin.isatty():
+        print(
+            "ERROR: Confirmation required, but no interactive terminal is available. "
+            "Re-run with --yes if this target project is correct.",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+
+    response = input("Type 'yes' to continue with this project: ").strip().lower()
+    if response != "yes":
+        print("Aborted before making any changes.")
+        raise SystemExit(1)
+
+
 def get_publicnet_id() -> Optional[str]:
     nets = os_list(["network"])
     for net in nets:
@@ -222,12 +347,33 @@ def extract_subnet_ids(fixed_ips_field: Any) -> List[str]:
                 subnet_ids.append(item["subnet_id"])
         return list(dict.fromkeys(subnet_ids))
 
-    text = str(fixed_ips_field).replace('"', "'")
-    parts = text.split("'")
+    if isinstance(fixed_ips_field, dict):
+        subnet_id = fixed_ips_field.get("subnet_id")
+        return [subnet_id] if subnet_id else []
 
-    for i, token in enumerate(parts):
-        if token == "subnet_id" and i + 2 < len(parts):
-            subnet_ids.append(parts[i + 2])
+    text = str(fixed_ips_field).strip()
+    if not text:
+        return []
+
+    if text.startswith(("[", "{")):
+        try:
+            parsed = ast.literal_eval(text)
+        except (ValueError, SyntaxError):
+            parsed = None
+        if isinstance(parsed, list):
+            for item in parsed:
+                if isinstance(item, dict) and item.get("subnet_id"):
+                    subnet_ids.append(item["subnet_id"])
+        elif isinstance(parsed, dict) and parsed.get("subnet_id"):
+            subnet_ids.append(parsed["subnet_id"])
+
+    if subnet_ids:
+        return list(dict.fromkeys(subnet_ids))
+
+    subnet_ids.extend(
+        match.group(1)
+        for match in re.finditer(r"subnet_id\s*[:=]\s*['\"]?([0-9a-f-]+)", text, flags=re.IGNORECASE)
+    )
 
     return list(dict.fromkeys(subnet_ids))
 
@@ -405,26 +551,66 @@ def delete_nondefault_security_groups(execute: bool) -> None:
 
 
 def list_router_ports(router_id: str) -> List[Dict[str, Any]]:
-    ports = list_ports_long()
-    router_ports = []
+    return list_ports_for_router(router_id)
 
-    for port in ports:
-        device_id = value_get(port, "Device ID", "device_id")
-        if device_id == router_id:
-            router_ports.append(port)
 
-    return router_ports
+def extract_port_ids(text: str) -> List[str]:
+    return list(dict.fromkeys(UUID_PATTERN.findall(text or "")))
+
+
+def detach_router_port(router_id: str, port_id: str, execute: bool) -> bool:
+    port = os_show(["port"], port_id, allow_fail=True)
+    if not port:
+        print(f"[WARN] Unable to inspect attached port {port_id}", file=sys.stderr)
+        return False
+
+    fixed_ips = value_get(port, "fixed_ips", "Fixed IP Addresses", default=[])
+    subnet_ids = extract_subnet_ids(fixed_ips)
+
+    if subnet_ids:
+        detached = False
+        for subnet_id in subnet_ids:
+            cmd = ["openstack", "router", "remove", "subnet", router_id, subnet_id]
+            if execute:
+                print(f"[UPDATE] {' '.join(cmd)}")
+                result = run_cmd(cmd, allow_fail=True, retries=1)
+                detached = result is not None or detached
+            else:
+                print(f"[DRY-RUN] {' '.join(cmd)}")
+                detached = True
+        return detached
+
+    cmd = ["openstack", "router", "remove", "port", router_id, port_id]
+    if execute:
+        print(f"[UPDATE] {' '.join(cmd)}")
+        return run_cmd(cmd, allow_fail=True, retries=1) is not None
+
+    print(f"[DRY-RUN] {' '.join(cmd)}")
+    return True
+
+
+def run_delete_router(router_id: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["openstack", "router", "delete", router_id],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
 
 
 def remove_router_subnets(router_id: str, execute: bool) -> None:
     ports = list_router_ports(router_id)
+    detached_any = False
 
     for port in ports:
         device_owner = value_get(port, "Device Owner", "device_owner", default="") or ""
         port_id = value_get(port, "ID", "id")
         fixed_ips = value_get(port, "Fixed IP Addresses", "fixed_ips", default=[])
 
-        if device_owner != "network:router_interface":
+        if device_owner not in {
+            "network:router_interface",
+            "network:ha_router_replicated_interface",
+        }:
             continue
 
         subnet_ids = extract_subnet_ids(fixed_ips)
@@ -437,6 +623,7 @@ def remove_router_subnets(router_id: str, execute: bool) -> None:
                     run_cmd(cmd, allow_fail=True, retries=1)
                 else:
                     print(f"[DRY-RUN] {' '.join(cmd)}")
+                detached_any = True
         elif port_id:
             cmd = ["openstack", "router", "remove", "port", router_id, port_id]
             if execute:
@@ -444,6 +631,10 @@ def remove_router_subnets(router_id: str, execute: bool) -> None:
                 run_cmd(cmd, allow_fail=True, retries=1)
             else:
                 print(f"[DRY-RUN] {' '.join(cmd)}")
+            detached_any = True
+
+    if not detached_any:
+        print("  no router interface ports found")
 
 
 def remove_router_gateway(router_id: str, execute: bool) -> None:
@@ -468,13 +659,38 @@ def delete_routers(execute: bool) -> None:
         router_name = value_get(router, "Name", "name", default=router_id)
 
         print(f"-- clearing router {router_name} ({router_id})")
-        remove_router_subnets(router_id, execute=execute)
         remove_router_gateway(router_id, execute=execute)
+        remove_router_subnets(router_id, execute=execute)
 
         cmd = ["openstack", "router", "delete", router_id]
         if execute:
             print(f"[DELETE] {' '.join(cmd)}")
-            run_cmd(cmd, allow_fail=True, retries=1)
+            proc = run_delete_router(router_id)
+            if proc.returncode == 0:
+                continue
+
+            err = OSCommandError(
+                f"Command failed ({proc.returncode}): {' '.join(cmd)}\n"
+                f"STDERR:\n{proc.stderr.strip()}\n"
+                f"STDOUT:\n{proc.stdout.strip()}"
+            )
+            print(f"[WARN] {err}", file=sys.stderr)
+
+            attached_port_ids = extract_port_ids(proc.stderr)
+            if not attached_port_ids:
+                continue
+
+            print(
+                "  retrying router cleanup after detaching attached ports: "
+                + ", ".join(attached_port_ids)
+            )
+            detached_any = False
+            for port_id in attached_port_ids:
+                detached_any = detach_router_port(router_id, port_id, execute=True) or detached_any
+
+            if detached_any:
+                print(f"[DELETE] {' '.join(cmd)}  # retry")
+                run_cmd(cmd, allow_fail=True, retries=1)
         else:
             print(f"[DRY-RUN] {' '.join(cmd)}")
 
@@ -591,6 +807,11 @@ def main() -> None:
         help="Actually perform deletions. Without this flag, the script only prints what it would do.",
     )
     parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Skip the interactive target-project confirmation prompt.",
+    )
+    parser.add_argument(
         "--network-passes",
         type=int,
         default=2,
@@ -600,6 +821,7 @@ def main() -> None:
 
     which_or_die("openstack")
     verify_auth()
+    confirm_target_project(skip_confirmation=args.yes)
 
     publicnet_id = get_publicnet_id()
     keep_network_ids: Set[str] = set()
